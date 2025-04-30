@@ -1,5 +1,3 @@
-@jsonschema(schema="https://www.talos.dev/v1.9/schemas/config.schema.json")
-
 machine: {
 	install: diskSelector: ""
 

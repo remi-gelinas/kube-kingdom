@@ -37,7 +37,7 @@
               crane
               cue
               fluxcd
-              minijinja
+              go
               talosctl
             ];
           };
