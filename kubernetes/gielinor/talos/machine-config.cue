@@ -1,13 +1,9 @@
-package machine_config
-
-import (
-	v1alpha1 "github.com/siderolabs/talos/pkg/machinery/config/types/v1alpha1"
-)
+package talos
 
 #machineType:    string @tag(machine_type)
 #isControlPlane: #machineType == "controlplane"
 
-config: v1alpha1.Config & {
+config: {
 	version: "v1alpha1"
 	debug:   false
 	persist: true
