@@ -1,5 +1,4 @@
-module: "github.com/remi-gelinas/kube-kingdom"
-
+module: "kubek.ing"
 language: {
 	version: "v0.12.0"
 }

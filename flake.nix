@@ -19,6 +19,33 @@
           inherit system;
 
           config.allowUnfree = true;
+
+          overlays = [
+            (final: prev: {
+              cue = prev.cue.overrideAttrs (
+                finalAttrs: prevAttrs: {
+                  version = "0.13.0-alpha.4";
+
+                  src = prev.fetchFromGitHub {
+                    owner = "cue-lang";
+                    repo = "cue";
+                    rev = "v${finalAttrs.version}";
+                    hash = "sha256-bW64EjmtuL6n88FZ8yRSxTA5o+YprpDnBBucedWwfb4=";
+                  };
+
+                  vendorHash = "sha256-JXLQ6o9bdJphGXgP1PFtf46u/xtbRX8EtDVDFIyO2A0=";
+
+                  ldflags = map (
+                    flag:
+                    if (builtins.match "^-X cuelang.org/go/cmd/cue/cmd.version=.*$" flag) != null then
+                      "-X cuelang.org/go/cmd/cue/cmd.version=v${finalAttrs.version}"
+                    else
+                      flag
+                  ) prevAttrs.ldflags;
+                }
+              );
+            })
+          ];
         }
       );
 

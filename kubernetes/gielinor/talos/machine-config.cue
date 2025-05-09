@@ -1,21 +1,25 @@
-package talos
+package config
 
-#machineType:    string @tag(machine_type)
-#isControlPlane: #machineType == "controlplane"
+import talos "github.com/siderolabs/talos/pkg/machinery/config/types/v1alpha1"
 
-config: {
+#config: type!: string
+
+_#isControlPlane: #config.type == "controlplane"
+
+talos.#Config
+
+{
 	version: "v1alpha1"
 	debug:   false
-	persist: true
 
 	machine: {
-		type:  #machineType
+		type:  #config.type
 		token: "op://K8s/talos/MACHINE_TOKEN"
 
 		ca: {
 			crt: "op://K8s/talos/MACHINE_CA_CRT"
 
-			if #isControlPlane {
+			if _#isControlPlane {
 				key: "op://K8s/talos/MACHINE_CA_KEY"
 			}
 		}
@@ -37,7 +41,7 @@ config: {
 				forwardKubeDNSToHost: false
 			}
 
-			if #isControlPlane {
+			if _#isControlPlane {
 				kubernetesTalosAPIAccess: {
 					enabled: true
 					allowedRoles: ["os:admin"]
@@ -62,25 +66,42 @@ config: {
 			{name: "thunderbolt_net"},
 		]
 
-		files: [{
-			op:   "create"
-			path: "/etc/cri/conf.d/20-customization.part"
-			content: """
-				[plugins."io.containerd.grpc.v1.cri".containerd]
-				  default_runtime_name = "crun"
+		files: [
+			///
+			{
+				op:          "create"
+				path:        "/etc/cri/conf.d/20-customization.part"
+				permissions: 0o755
+				content: """
+					[plugins."io.containerd.cri.v1.runtime".containerd]
+					  default_runtime_name = "gvisor"
+					"""
+			},
 
-				[plugins."io.containerd.cri.v1.images"]
-				  discard_unpacked_layers = false
-				"""
-		}]
+			//
+			{
+				op:          "create"
+				path:        "/sys/kernel/mm/transparent_hugepage/shmem_enabled"
+				content:     "advise"
+				permissions: 0o755
+			},
+
+			//
+			{
+				op:          "append"
+				path:        "/etc/cri/conf.d/20-customization.part"
+				permissions: 0o755
+				content: """
+					[plugins."io.containerd.cri.v1.images"]
+					  discard_unpacked_layers = false
+					"""
+			},
+		]
 
 		kubelet: {
 			image:                               "ghcr.io/siderolabs/kubelet:{{ ENV.KUBERNETES_VERSION }}"
 			defaultRuntimeSeccompProfileEnabled: true
 			disableManifestsDirectory:           true
-
-			extraConfig: serializeImagePulls: false
-
 			nodeIP: validSubnets: ["192.168.10.0/24"]
 		}
 
@@ -89,23 +110,18 @@ config: {
 			disableSearchDomain: true
 		}
 
-		nodeLabels: "intel.feature.node.kubernetes.io/gpu": true
+		nodeLabels: "intel.feature.node.kubernetes.io/gpu": "true"
 
 		sysctls: {
-			"fs.inotify.max_user_watches":   1048576
-			"fs.inotify.max_user_instances": 8192
+			"fs.inotify.max_user_watches":   "1048576"
+			"fs.inotify.max_user_instances": "8192"
 		}
 
 		sysfs: {
-			"devices.system.cpu.intel_pstate.hwp_dynamic_boost": 1
-			"devices.system.cpu.cpu0.cpuidle.state1.disable":    1
-			"devices.system.cpu.cpu0.cpuidle.state2.disable":    1
-			"devices.system.cpu.cpu0.cpuidle.state3.disable":    1
-		}
-
-		time: {
-			disabled: false
-			servers: ["time.cloudflare.com"]
+			"devices.system.cpu.intel_pstate.hwp_dynamic_boost": "1"
+			"devices.system.cpu.cpu0.cpuidle.state1.disable":    "1"
+			"devices.system.cpu.cpu0.cpuidle.state2.disable":    "1"
+			"devices.system.cpu.cpu0.cpuidle.state3.disable":    "1"
 		}
 
 		udev: rules: [
@@ -128,7 +144,7 @@ config: {
 		ca: {
 			crt: "op://K8s/talos/CLUSTER_CA_CRT"
 
-			if #isControlPlane {
+			if _#isControlPlane {
 				key: "op://K8s/talos/CLUSTER_CA_KEY"
 			}
 		}
@@ -149,7 +165,7 @@ config: {
 			serviceSubnets: ["10.245.0.0/16"]
 		}
 
-		if #isControlPlane {
+		if _#isControlPlane {
 			secretboxEncryptionSecret:      "op://K8s/talos/CLUSTER_SECRETBOXENCRYPTIONSECRET"
 			allowSchedulingOnControlPlanes: true
 
@@ -171,7 +187,7 @@ config: {
 				image:                    "registry.k8s.io/kube-apiserver:{{ ENV.KUBERNETES_VERSION }}"
 				disablePodSecurityPolicy: true
 				certSANs: ["k8s.internal"]
-				extraArgs: "enable-aggregator-routing": true
+				extraArgs: "enable-aggregator-routing": "true"
 			}
 
 			controllerManager: {
@@ -181,7 +197,7 @@ config: {
 
 			etcd: {
 				advertisedSubnets: ["192.168.10.0/24"]
-				"listen-metrics-urls": "http://0.0.0.0:2381"
+				extraArgs: "listen-metrics-urls": "http://0.0.0.0:2381"
 
 				ca: {
 					crt: "op://K8s/talos/CLUSTER_ETCD_CA_CRT"
@@ -226,4 +242,5 @@ config: {
 			}
 		}
 	}
+
 }
