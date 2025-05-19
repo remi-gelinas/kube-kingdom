@@ -1,4 +1,4 @@
-package varrock
+package falador
 
 import (
 	"encoding/yaml"
@@ -9,23 +9,23 @@ yaml.MarshalStream([commonConfig & {
 	#config: type: "controlplane"
 
 	machine: network: {
-		hostname: "varrock.gielinor.internal"
+		hostname: "falador.gielinor.internal"
 		interfaces: [{
 			deviceSelector: busPath: "0 - 1.0"
 			dhcp: false
 			mtu:  65520
-			addresses: ["fe80::0000:0000:0000:0003/128"]
+			addresses: ["fe80::0000:0000:0000:0001/128"]
 			routes: [
-				// Falador
+				// Lumbridge
 				{
-					network: "fe80::0000:0000:0000:0001/128"
+					network: "fe80::0000:0000:0000:0002/128"
 					metric:  2048
 					gateway: ""
 				},
 
-				// Lumbridge
+				// Varrock
 				{
-					network: "fe80::0000:0000:0000:0002/128"
+					network: "fe80::0000:0000:0000:0003/128"
 					metric:  2048
 					gateway: ""
 				},

@@ -1,4 +1,4 @@
-module github.com/remi-gelinas/kube-kingdom
+module kubek.ing
 
 go 1.24.2
 
@@ -34,7 +34,7 @@ require (
 	github.com/siderolabs/go-pointer v1.0.1 // indirect
 	github.com/siderolabs/net v0.4.0 // indirect
 	github.com/siderolabs/protoenc v0.2.2 // indirect
-	github.com/siderolabs/talos/pkg/machinery v1.10.1 // indirect
+	github.com/siderolabs/talos/pkg/machinery v1.10.2 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
